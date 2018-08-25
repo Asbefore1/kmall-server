@@ -5,6 +5,7 @@ const mongoose=require('mongoose');
 const Cookies=require('cookies');
 const session=require('express-session');
 const MongoStore = require("connect-mongo")(session);
+const cookieParser = require('cookie-parser')
 
 //1.启动数据库
 mongoose.connect('mongodb://localhost:27017/kmall', { useNewUrlParser: true });
@@ -21,13 +22,23 @@ const app=express();
 
 
 //跨域设置
-app.use((req,res,next)=>{
+app.use((req,res,next)=>{//跨域到哪个端口号上,这里跨到3000上
 	res.append("Access-Control-Allow-Origin","http://localhost:3000");
 	res.append("Access-Control-Allow-Credentials",true);
 	res.append("Access-Control-Allow-Methods","GET, POST, PUT,DELETE");
 	res.append("Access-Control-Allow-Headers", "Content-Type, X-Requested-With"); 
 	next();
 })
+
+//处理OPTIONS
+app.use((req,res,next)=>{
+	if(req.method=='OPTIONS'){	
+		res.send('OPTIONS OK')
+	}
+	next()
+})
+
+app.use(cookieParser())
 
 //cookie+session  cookies是从前台发过来,session存到后台
 //发过来之后session从后台去取,找匹配的id
@@ -56,6 +67,13 @@ app.use((req,res,next)=>{
 	req.userInfo=req.session.userInfo || {};
 	next();
 })
+
+//打印出{ pig: 's:DejyS-s7yYw9afwtsNqPjlf9zRTnegjZ.yJLHQ/fVFRIvXBumh3oZMUi56A0ijlQdMv7ZquD3j6o' }
+
+/*app.get('/', function(req, res) {
+  console.log('Cookies: ', req.cookies)
+})
+*/
 
 //4.添加处理post请求的中间件
 app.use(bodyParser.urlencoded({ extended: false }));

@@ -27,7 +27,15 @@ router.get('/init',(req,res,next)=>{
 	})
 })
 */
-
+/*
+router.use((req,res,next)=>{
+	if(req.userInfo.isAdmin){	
+		next();
+	}else{
+		res.send('<h1>请用管理员身份登录</h1>')
+	}
+})
+*/
 
 //用户登录
 router.post('/login',(req,res)=>{
@@ -55,8 +63,8 @@ router.post('/login',(req,res)=>{
 			//返回给前端
 			res.json(result);  //result.code  result.errmessage  result.data
 			// console.log(result.data)//result包含了code:0,errmessage:'',data: { username: 'admin' }
-		}else{
-			result.code=10,
+		}else{//没有找到数据
+			result.code=1,
 			result.errmessage='用户名或密码错误',
 			res.json(result);
 		}
@@ -64,17 +72,20 @@ router.post('/login',(req,res)=>{
 })
 
 
+router.get('/count',(req,res)=>{
+	res.json({
+		code:0,
+		errmessage:''
+	})
+})
+
 //进入admin的中间件,写在router.get的前面
 //权限控制,必须用管理员的身份登录后isAdmin变成了true
 //才能进去管理员的后台,在地址栏中输入127.0.0.1:3000/admin时
 //由于没有判断是不是管理员,所以不能进入
-router.use((req,res,next)=>{
-	if(req.userInfo.isAdmin){	
-		next();
-	}else{
-		res.send('<h1>请用管理员身份登录</h1>')
-	}
-})
+
+
+
 
 //显示管理员首页
 router.get('/',(req,res)=>{
