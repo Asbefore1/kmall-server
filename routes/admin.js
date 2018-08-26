@@ -27,15 +27,7 @@ router.get('/init',(req,res,next)=>{
 	})
 })
 */
-/*
-router.use((req,res,next)=>{
-	if(req.userInfo.isAdmin){	
-		next();
-	}else{
-		res.send('<h1>请用管理员身份登录</h1>')
-	}
-})
-*/
+
 
 //用户登录
 router.post('/login',(req,res)=>{
@@ -49,7 +41,7 @@ router.post('/login',(req,res)=>{
 		errmessage:''
 	}
 	UserModel  //数据库里查找用户名和密码
-	.findOne({username:body.username,password:hmac(body.password)})//返回一个promise对象
+	.findOne({username:body.username,password:hmac(body.password),isAdmin:true})//返回一个promise对象
 	.then((user)=>{//user就是查出来的用户名和密码这个对象
 		if(user){		
 			req.session.userInfo={//在前台layout使用
@@ -63,6 +55,7 @@ router.post('/login',(req,res)=>{
 			//返回给前端
 			res.json(result);  //result.code  result.errmessage  result.data
 			// console.log(result.data)//result包含了code:0,errmessage:'',data: { username: 'admin' }
+			// console.log(req.session.userInfo)
 		}else{//没有找到数据
 			result.code=1,
 			result.errmessage='用户名或密码错误',
@@ -72,10 +65,26 @@ router.post('/login',(req,res)=>{
 })
 
 
+router.use((req,res,next)=>{
+	if(req.userInfo.isAdmin){	
+		next();
+	}else{
+		res.send({
+			code:10
+		})
+	}
+})
+
+
+
 router.get('/count',(req,res)=>{
 	res.json({
 		code:0,
-		errmessage:''
+		data:{
+			usernum:100,
+			ordernum:101,
+			pronum:102
+		}
 	})
 })
 
