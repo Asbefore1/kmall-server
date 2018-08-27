@@ -11,8 +11,9 @@ const path = require('path');
 const router = Router();
 
 /*
+//服务器是3001端口,在地址栏输入3001找数据
 router.get('/init',(req,res,next)=>{
-	//插入数据到数据库
+	//插入管理员到数据库
 	new UserModel({
 		username:'admin',
 		password:hmac('admin'),
@@ -56,7 +57,7 @@ router.post('/login',(req,res)=>{
 			res.json(result);  //result.code  result.errmessage  result.data
 			// console.log(result.data)//result包含了code:0,errmessage:'',data: { username: 'admin' }
 			// console.log(req.session.userInfo)
-		}else{//没有找到数据
+		}else{//发送ajax失败
 			result.code=1,
 			result.errmessage='用户名或密码错误',
 			res.json(result);
@@ -64,7 +65,7 @@ router.post('/login',(req,res)=>{
 	})
 })
 
-
+//权限控制
 router.use((req,res,next)=>{
 	if(req.userInfo.isAdmin){	
 		next();
@@ -76,32 +77,57 @@ router.use((req,res,next)=>{
 })
 
 
-
+//获取首页用户数订单数
 router.get('/count',(req,res)=>{
 	res.json({
 		code:0,
 		data:{
-			usernum:100,
-			ordernum:101,
-			pronum:102
+			usernum:500,
+			ordernum:501,
+			pronum:502
 		}
 	})
 })
 
-//进入admin的中间件,写在router.get的前面
-//权限控制,必须用管理员的身份登录后isAdmin变成了true
-//才能进去管理员的后台,在地址栏中输入127.0.0.1:3000/admin时
-//由于没有判断是不是管理员,所以不能进入
 
-
-
-
-//显示管理员首页
-router.get('/',(req,res)=>{
-	res.render('admin/index',{//render渲染页面
-		userInfo:req.userInfo
+//用户列表获取用户信息
+router.get('/users',(req,res)=>{
+	let options = {
+		model:UserModel, //操作的数据模型
+		query:{}, //查询条件,查询所有
+		sort:{_id:-1} //排序
+	}
+	pagination(options)
+	.then((result)=>{
+		// console.log('result....',result)
+		res.json({
+			code:0,
+			data:{
+				current:result.current,
+				pageSize:result.pageSize,
+				total:result.total,
+				list:result.list
+			}
+		})
 	})
+	
 })
+
+
+//so far so good...
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -133,6 +159,12 @@ router.get('/users',(req,res)=>{
 })
 
 
+//显示管理员首页
+router.get('/',(req,res)=>{
+	res.render('admin/index',{//render渲染页面
+		userInfo:req.userInfo
+	})
+})
 
 //添加文章是处理图片上传
 router.post('/uploadImages',upload.single('upload'),(req,res)=>{

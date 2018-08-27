@@ -11,7 +11,7 @@
 let pagination=(options)=>{
 	return new Promise((resolve,reject)=>{
 		//需要限制的页数
-		let limit=2;
+		let limit=6;
 
 		//需要显示的页码	
 		// req.query.page是指不传的情况下会走1,传非数字的话不能走
@@ -39,13 +39,6 @@ let pagination=(options)=>{
 				page=1;
 			}
 
-			let list=[];
-
-			for(var i=1;i<=pages;i++){//i是第几页
-				list.push(i)
-			}
-
-
 			//需要跳过的页数
 			let skip=(page-1)*limit;
 			//第一页显示2条  跳过0条
@@ -67,11 +60,12 @@ let pagination=(options)=>{
 			.skip(skip)
 			.limit(limit)
 			.then((docs)=>{
+				// console.log('docs....',docs)
 				resolve({
-					docs:docs,  //order _id name
-					page:page*1, //默认page是字符串,做了字符串拼接,*1变成数字
-					list:list,
-					pages:pages
+					list:docs,  //docs包括username  password _id _v isAdmin
+					total:count,
+					current:page*1,
+					pageSize:limit
 				})
 				// console.log('1:::',docs)
 				// console.log(req.userInfo)

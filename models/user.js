@@ -7,13 +7,18 @@ const UserSchema = new mongoose.Schema({
   password:{
   	type:String
   },
-  repassword:{
-  	type:String
-  },
   isAdmin:{//判断是不是管理员
   	type:Boolean,
   	default:false
+  },
+  email:{
+    type:String,
+  },
+  phone:{
+    type:String
   }
+},{
+  timestamps:true //createdAt and updatedAt什么时间注册,什么时间更新
 });
 
 
