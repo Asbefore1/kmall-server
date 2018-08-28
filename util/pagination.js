@@ -11,7 +11,7 @@
 let pagination=(options)=>{
 	return new Promise((resolve,reject)=>{
 		//需要限制的页数
-		let limit=6;
+		let limit=5;
 
 		//需要显示的页码	
 		// req.query.page是指不传的情况下会走1,传非数字的话不能走

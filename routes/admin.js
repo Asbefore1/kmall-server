@@ -93,8 +93,10 @@ router.get('/count',(req,res)=>{
 //用户列表获取用户信息
 router.get('/users',(req,res)=>{
 	let options = {
+		page:req.query.page,//从前台拿到当前页 //query是一个对象
 		model:UserModel, //操作的数据模型
 		query:{}, //查询条件,查询所有
+		projection:'-password -__v -updatedAt',//投影
 		sort:{_id:-1} //排序
 	}
 	pagination(options)

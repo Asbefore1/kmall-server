@@ -3,12 +3,93 @@ const UserModel=require('../models/user.js');
 const CategoryModel=require('../models/category.js');
 const pagination=require('../util/pagination.js');
 const router=Router();
-//显示首页
+
+
+//权限控制
+router.use((req,res,next)=>{
+	if(req.userInfo.isAdmin){	
+		next();
+	}else{
+		res.send({//10表示未登录
+			code:10
+		})
+	}
+})
+
+
+//处理新增请求
+router.post('/',(req,res)=>{	
+	// console.log(req.body)
+	let body=req.body;//使用了app.js里面的post请求的中间件
+	CategoryModel.findOne({name:body.name,pid:body.pid})//不能插入同名的分类
+	.then((cate)=>{//查询成功(查询有成功也有失败)
+		if(cate){//已经存在渲染错误页面
+			res.json({
+				code:1,
+				errmessage:'已存在同名分类,请重新插入'
+			})
+		}else{//不存在同名分类就插入
+			new CategoryModel({
+				name:body.name,
+				pid:body.pid
+			})
+			.save()
+			.then((newCate)=>{//插入成功
+				if(newCate){
+					if(body.pid==0){//如果添加的是一级分类,返回新的一级分类
+						CategoryModel.find({pid:0})
+						.then((categories)=>{
+							res.json({
+								code:0,
+								data:categories
+							})
+						})
+					}else{
+						res.json({
+							code:0
+						})
+					}				
+				}
+			})
+			.catch((e)=>{//插入失败,渲染错误页面
+				console.log(e)
+				res.json({
+					code:1,
+					errmessage:'插入失败,服务器端错误'
+				})
+			})
+		}
+	})
+})
+
+router.get('/',(req,res)=>{
+	let pid=req.query.pid;
+	CategoryModel.find({pid:pid})
+	.then((categories)=>{
+		res.json({
+			code:0,
+			data:categories
+		})
+	})
+	.catch((err)=>{
+		res.json({
+			code:1,
+			errmessage:'服务器获取数据失败'
+		})
+	})
+})
+
+
+//so far so good 
+
+
+
 
 //进入admin的中间件,写在router.get的前面
 //权限控制,必须用管理员的身份登录后isAdmin变成了true
 //才能进去管理员的后台,在地址栏中输入127.0.0.1:3000/admin时
 //由于没有判断是不是管理员,所以不能进入
+/*
 router.use((req,res,next)=>{
 	if(req.userInfo.isAdmin){	
 		next();
@@ -16,7 +97,7 @@ router.use((req,res,next)=>{
 		res.send('<h1>请用管理员身份登录</h1>')
 	}
 })
-
+*/
 //显示分类管理首页
 router.get('/',(req,res)=>{
 	let options={

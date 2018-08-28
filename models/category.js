@@ -7,7 +7,12 @@ const CategorySchema = new mongoose.Schema({
   order:{
   	type:Number,
   	default:0
+  },
+  pid:{
+  	type:String
   }
+},{
+  timestamps:true //createdAt and updatedAt什么时间注册,什么时间更新
 });
 
 
