@@ -67,6 +67,8 @@ router.get('/',(req,res)=>{
 	let pid=req.query.pid;
 	let currentPage=req.query.currentPage;
 	if(currentPage){
+		CategoryModel.getPaginationCategories(currentPage,{pid:pid})
+		/*
 		let options = {
 			page:req.query.currentPage,//从前台拿到当前页 //query是一个对象
 			model:CategoryModel, //操作的数据模型
@@ -75,6 +77,7 @@ router.get('/',(req,res)=>{
 			sort:{_id:1} //排序
 		}
 		pagination(options)
+		*/
 		.then((result)=>{
 			// console.log('result....',result)
 			res.json({
