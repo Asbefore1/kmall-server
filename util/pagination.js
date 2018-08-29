@@ -9,6 +9,7 @@
 	}
 */
 let pagination=(options)=>{
+	// console.log('options...',options)
 	return new Promise((resolve,reject)=>{
 		//需要限制的页数
 		let limit=5;
@@ -55,6 +56,7 @@ let pagination=(options)=>{
 				}
 			}
 			
+			//把找到的数据按照规定的顺序和规则排列
 			query
 			.sort(options.sort)
 			.skip(skip)

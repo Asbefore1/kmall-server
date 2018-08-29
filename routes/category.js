@@ -23,7 +23,7 @@ router.post('/',(req,res)=>{
 	let body=req.body;//使用了app.js里面的post请求的中间件
 	CategoryModel.findOne({name:body.name,pid:body.pid})//不能插入同名的分类
 	.then((cate)=>{//查询成功(查询有成功也有失败)
-		if(cate){//已经存在渲染错误页面
+		if(cate){//已经存在同名分类
 			res.json({
 				code:1,
 				errmessage:'已存在同名分类,请重新插入'
@@ -35,9 +35,9 @@ router.post('/',(req,res)=>{
 			})
 			.save()
 			.then((newCate)=>{//插入成功
-				if(newCate){
-					if(body.pid==0){//如果添加的是一级分类,返回新的一级分类
-						CategoryModel.find({pid:0})
+				// if(newCate){
+					if(body.pid==0){//如果添加的是一级分类,返回新的一级分类,如果添加的是二级分类,就没有必要再更新页面了
+						CategoryModel.find({pid:0},'_id name order pid')
 						.then((categories)=>{
 							res.json({
 								code:0,
@@ -49,10 +49,10 @@ router.post('/',(req,res)=>{
 							code:0
 						})
 					}				
-				}
+				// }
 			})
 			.catch((e)=>{//插入失败,渲染错误页面
-				console.log(e)
+				// console.log(e)
 				res.json({
 					code:1,
 					errmessage:'插入失败,服务器端错误'
@@ -62,21 +62,46 @@ router.post('/',(req,res)=>{
 	})
 })
 
+
 router.get('/',(req,res)=>{
 	let pid=req.query.pid;
-	CategoryModel.find({pid:pid})
-	.then((categories)=>{
-		res.json({
-			code:0,
-			data:categories
+	let currentPage=req.query.currentPage;
+	if(currentPage){
+		let options = {
+			page:req.query.currentPage,//从前台拿到当前页 //query是一个对象
+			model:CategoryModel, //操作的数据模型
+			query:{pid:pid}, //查询条件,查询所有
+			projection:'_id name order pid',//投影
+			sort:{_id:1} //排序
+		}
+		pagination(options)
+		.then((result)=>{
+			// console.log('result....',result)
+			res.json({
+				code:0,
+				data:{
+					current:result.current,
+					pageSize:result.pageSize,
+					total:result.total,
+					list:result.list
+				}
+			})
 		})
-	})
-	.catch((err)=>{
-		res.json({
-			code:1,
-			errmessage:'服务器获取数据失败'
+	}else{
+		CategoryModel.find({pid:pid},'_id name order pid')
+		.then((categories)=>{
+			res.json({
+				code:0,
+				data:categories
+			})
 		})
-	})
+		.catch((err)=>{
+			res.json({
+				code:1,
+				errmessage:'服务器获取数据失败'
+			})
+		})
+	}
 })
 
 
