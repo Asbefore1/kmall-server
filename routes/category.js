@@ -7,10 +7,11 @@ const router=Router();
 
 //权限控制
 router.use((req,res,next)=>{
+	// console.log(req.userInfo)
 	if(req.userInfo.isAdmin){	
 		next();
 	}else{
-		res.send({//10表示未登录
+		res.json({//10表示未登录
 			code:10
 		})
 	}
@@ -106,6 +107,62 @@ router.get('/',(req,res)=>{
 		})
 	}
 })
+
+//更新名称
+router.put('/changeName',(req,res)=>{	
+	// console.log('a:::',req.body.pid)
+	// console.log('b::',req.body.updateName)
+	// console.log('c::',req.body.updateId)
+	// console.log('d::',req.body.currentPage)
+	let body=req.body;//使用了app.js里面的post请求的中间件
+	let currentPage=body.currentPage;
+
+	CategoryModel
+	.findOne({name:body.updateName,pid:body.pid})//不能插入同名的分类
+	.then((cate)=>{//查询成功(查询有成功也有失败)
+		if(cate){//已经存在同名分类
+			res.json({
+				code:1,
+				errmessage:'已存在同名分类,请重新插入'
+			})
+		}else{//不存在同名分类就插入
+			CategoryModel
+			.update({_id:body.updateId},{name:body.updateName})
+			.then((cate)=>{
+				if(cate){
+					CategoryModel
+					.getPaginationCategories(currentPage,{pid:body.pid})
+					.then((result)=>{
+						// console.log('result..',result)
+						res.json({
+							code:0,
+							data:{
+								current:result.current,
+								pageSize:result.pageSize,
+								total:result.total,
+								list:result.list
+							}
+						})
+					})
+				}else{
+					console.log('err..',err)
+					res.json({
+						code:1,
+						errmessage:'更新失败'
+					})
+				}
+			})			
+			.catch((e)=>{//插入失败,渲染错误页面
+				console.log('e..',e)
+				res.json({
+					code:1,
+					errmessage:'插入失败,服务器端错误'
+				})
+			})
+		}
+	})
+})
+
 
 
 //so far so good 

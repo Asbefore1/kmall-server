@@ -35,8 +35,10 @@ app.use((req,res,next)=>{//跨域到哪个端口号上,这里跨到3000上
 app.use((req,res,next)=>{
 	if(req.method=='OPTIONS'){	
 		res.send('OPTIONS OK')
+	}else{
+		next()
 	}
-	next()
+//	next()
 })
 
 app.use(cookieParser())
