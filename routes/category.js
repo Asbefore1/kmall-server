@@ -63,7 +63,7 @@ router.post('/',(req,res)=>{
 	})
 })
 
-
+//获取分类添加到根分类下
 router.get('/',(req,res)=>{
 	let pid=req.query.pid;
 	let currentPage=req.query.currentPage;

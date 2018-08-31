@@ -26,7 +26,8 @@ app.use((req,res,next)=>{//跨域到哪个端口号上,这里跨到3000上
 	res.append("Access-Control-Allow-Origin","http://localhost:3000");
 	res.append("Access-Control-Allow-Credentials",true);
 	res.append("Access-Control-Allow-Methods","GET, POST, PUT,DELETE");
-	res.append("Access-Control-Allow-Headers", "Content-Type, X-Requested-With"); 
+	//X-File-Name是在Editor是商品详情(使用Simditor富文本编辑器)时使用到
+	res.append("Access-Control-Allow-Headers", "Content-Type, X-Requested-With,X-File-Name"); 
 	next();
 })
 
@@ -41,7 +42,12 @@ app.use((req,res,next)=>{
 //	next()
 })
 
-app.use(cookieParser())
+//3.配置静态资源
+app.use(express.static('public'));
+
+
+// app.use(cookieParser())
+
 
 
 //cookie+session  cookies是从前台发过来,session存到后台
@@ -87,10 +93,13 @@ app.use(bodyParser.json());
 
 
 //5.处理路由
+
 app.use('/admin',require('./routes/admin.js'))
 app.use('/',require('./routes/index.js'))
 app.use('/user',require('./routes/user.js'))
 app.use('/category',require('./routes/category.js'))
+app.use('/product',require('./routes/product.js'))
+
 app.use('/article',require('./routes/article.js'))
 app.use('/comment',require('./routes/comment.js'))
 app.use('/resource',require('./routes/resource.js'))
