@@ -9,7 +9,6 @@
 	}
 */
 let pagination=(options)=>{
-	// console.log('options...',options)
 	return new Promise((resolve,reject)=>{
 		//需要限制的页数
 		let limit=5;
@@ -49,13 +48,12 @@ let pagination=(options)=>{
 
 			//获取所有信息,分配给模板
 			let query=options.model.find(options.query,options.projection);//'_id username isAdmin'只显示这么多
-			// console.log(query)
+			// console.log('1::::',options.populate)
 			if(options.populate){
 				for(let i=0;i<options.populate.length;i++){
 					query=query.populate(options.populate[i])
 				}
 			}
-			
 			//把找到的数据按照规定的顺序和规则排列
 			query
 			.sort(options.sort)

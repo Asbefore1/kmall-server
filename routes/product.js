@@ -1,6 +1,6 @@
 const Router=require('express').Router;
 const router=Router();
-
+const ProductModel=require('../models/product.js');
 const path = require('path');
 const fs = require('fs');
 const multer=require('multer');//负责上传文件
@@ -14,7 +14,7 @@ const storage = multer.diskStorage({
 	}
 })
 
-const upload = multer({ storage: storage })
+const upload = multer({ storage: storage });
 
 
 //权限控制
@@ -39,7 +39,7 @@ router.use((req,res,next)=>{
 //7.前台传过来cookie在后台的session中拿到对应的cookie,就能判断有无用户登录
 
 
-//上传图片
+//上传商品图片
 router.post('/uploadImage',upload.single('file'),(req,res)=>{
 	// filePath是访问到服务器端的地址,最终回传给前台
 	const filePath='http://127.0.0.1:3001/resource/'+req.file.filename;
@@ -49,12 +49,12 @@ router.post('/uploadImage',upload.single('file'),(req,res)=>{
 
 
 
-/*
+
 //商品详情处理图片
 router.post('/getImageUrl',upload.single('upload'),(req,res)=>{
 	//发送给前端找地址(将图片插入到哪)
-	console.log(req.file.filename)
-	const filePath='http://127.0.0.1:3001/public/resource/'+req.file.filename;
+	// console.log(req.file.filename)
+	const filePath='http://127.0.0.1:3001/resource/'+req.file.filename;
 
 	res.json({
 		"success": true,
@@ -62,6 +62,46 @@ router.post('/getImageUrl',upload.single('upload'),(req,res)=>{
 		"file_path": filePath
 	})
 })
-*/
 
-module.exports=router;
+//处理新增请求
+router.post('/',(req,res)=>{	
+	// console.log(req.body.sonId)
+	let body=req.body;//使用了app.js里面的post请求的中间件
+
+	new ProductModel({
+		name:body.name,
+		description:body.description,
+		detail:body.detail,
+		Image:body.Image,
+		price:body.price,
+		sonId:body.sonId,
+		stock:body.stock
+	})
+	.save()
+	.then((product)=>{
+		if(product){//插入成功
+			ProductModel.getPaginationCategories(1,{})
+			.then((result)=>{
+				// console.log('result....',result)
+				res.json({
+					code:0,
+					data:{
+						current:result.current,
+						pageSize:result.pageSize,
+						total:result.total,
+						list:result.list
+					}
+				})
+			})
+		}								
+	})
+	.catch((e)=>{//插入失败,渲染错误页面
+		res.json({
+			code:1,
+			errmessage:'插入失败,服务器端错误'
+		})
+	})
+})
+
+
+module.exports=router
