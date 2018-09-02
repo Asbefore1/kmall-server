@@ -24,7 +24,7 @@ CategorySchema.statics.getPaginationCategories = function(currentPage,query={}){
             model:this, //操作的数据模型
             query:query, //查询条件,查询所有
             projection:'_id name order pid',//投影
-            sort:{_id:1} //排序
+            sort:{order:-1} //排序
         }
         pagination(options)
         .then((data)=>{

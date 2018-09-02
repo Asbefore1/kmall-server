@@ -163,7 +163,41 @@ router.put('/changeName',(req,res)=>{
 	})
 })
 
-
+//更新排序
+router.put('/updateOrder',(req,res)=>{
+	let body=req.body;
+	// console.log(body.id,body.newOrder)
+	CategoryModel
+	.update({_id:body.id},{order:body.newOrder})
+	.then((product)=>{
+		if(product){
+			CategoryModel
+			.getPaginationCategories(body.page,{pid:body.pid})
+			.then((result)=>{
+				res.json({
+					code:0,
+					data:{
+						current:result.current,
+						pageSize:result.pageSize,
+						total:result.total,
+						list:result.list
+					}
+				})
+			})
+		}else{
+			res.json({
+				code:1,
+				errmessage:'更新失败'
+			})
+		}	
+	})
+	.catch((err)=>{
+		res.json({
+			code:1,
+			errmessage:'服务器端错误'
+		})
+	})
+})
 
 //so far so good 
 

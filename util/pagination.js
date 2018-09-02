@@ -60,7 +60,6 @@ let pagination=(options)=>{
 			.skip(skip)
 			.limit(limit)
 			.then((docs)=>{
-				// console.log('docs....',docs)
 				resolve({
 					list:docs,  //docs包括username  password _id _v isAdmin
 					total:count,

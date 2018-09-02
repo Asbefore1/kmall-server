@@ -63,7 +63,7 @@ router.post('/getImageUrl',upload.single('upload'),(req,res)=>{
 	})
 })
 
-//处理新增请求
+//添加商品
 router.post('/',(req,res)=>{	
 	// console.log(req.body.sonId)
 	let body=req.body;//使用了app.js里面的post请求的中间件
@@ -78,20 +78,11 @@ router.post('/',(req,res)=>{
 		stock:body.stock
 	})
 	.save()
-	.then((product)=>{
+	.then((product)=>{//(走到then不一定插入成功,需要做一个判断)
 		if(product){//插入成功
-			ProductModel.getPaginationCategories(1,{})
-			.then((result)=>{
-				// console.log('result....',result)
-				res.json({
-					code:0,
-					data:{
-						current:result.current,
-						pageSize:result.pageSize,
-						total:result.total,
-						list:result.list
-					}
-				})
+			res.json({
+				code:0,
+				message:'添加商品成功'
 			})
 		}								
 	})
@@ -104,4 +95,124 @@ router.post('/',(req,res)=>{
 })
 
 
-module.exports=router
+//获取商品
+router.get('/',(req,res)=>{
+	//没有指定是第几页就显示第一页
+	let currentPage=req.query.currentPage || 1;
+	ProductModel
+	.getPaginationProducts(currentPage,{})
+	.then((result)=>{
+		res.json({
+			code:0,
+			data:{
+				current:result.current,
+				pageSize:result.pageSize,
+				total:result.total,
+				list:result.list
+			}
+		})
+	})
+	.catch((err)=>{
+		res.json({
+			code:1,
+			errmessage:'获取分类失败,服务器端错误'
+		})
+	})
+})
+
+//更新排序
+router.put('/setNewOrder',(req,res)=>{
+	let body=req.body;
+	// console.log(body.id,body.newOrder)
+	ProductModel
+	.update({_id:body.id},{order:body.newOrder})
+	.then((product)=>{
+		if(product){
+			ProductModel
+			.getPaginationProducts(body.page,{})
+			.then((result)=>{
+				res.json({
+					code:0,
+					data:{
+						current:result.current,
+						pageSize:result.pageSize,
+						total:result.total,
+						list:result.list
+					}
+				})
+			})
+		}else{
+			res.json({
+				code:1,
+				errmessage:'更新失败'
+			})
+		}	
+	})
+	.catch((err)=>{
+		res.json({
+			code:1,
+			errmessage:'服务器端错误'
+		})
+	})
+})
+
+//更新状态
+router.put('/updateStatus',(req,res)=>{
+	let body=req.body;
+	// console.log(body.id,body.newOrder)
+	ProductModel
+	.update({_id:body.id},{status:body.newStatus})
+	.then((product)=>{
+		if(product){
+			res.json({
+				code:0,
+				message:'更新状态成功'
+			})
+		}else{
+			ProductModel
+			.getPaginationProducts(body.page,{})
+			.then((result)=>{
+				res.json({
+					code:1,
+					errmessage:'更新状态失败',
+					data:{
+						current:result.current,
+						pageSize:result.pageSize,
+						total:result.total,
+						list:result.list
+					}
+				})
+			})
+		}	
+	})
+	.catch((err)=>{
+		res.json({
+			code:1,
+			errmessage:'服务器端错误'
+		})
+	})
+})
+
+//编辑时获取商品详细信息
+router.get('/getEditProduct',(req,res)=>{
+	let id=req.query.id;
+	ProductModel
+	.findById(id,'-__v -status -order -updatedAt -createdAt')
+	.populate({path:'sonId',select:'_id pid'})
+	.then((result)=>{
+		res.json({
+			code:0,
+			data:result
+		})
+	})
+	.catch((err)=>{
+		res.json({
+			code:1,
+			errmessage:'获取编辑信息失败,服务器端错误'
+		})
+	})
+})
+
+
+
+module.exports=router;

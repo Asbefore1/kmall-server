@@ -29,7 +29,7 @@ const ProductSchema = new mongoose.Schema({
     },
     status:{
         type:String,
-        default:'0'//0是在售 1是下架
+        default:0//0是在售 1是下架
     }
 },
     {
@@ -37,15 +37,14 @@ const ProductSchema = new mongoose.Schema({
     });
 
 //静态方法
-ProductSchema.statics.getPaginationCategories = function(currentPage,query={}){
+ProductSchema.statics.getPaginationProducts = function(currentPage,query={}){
     return new Promise((resolve,reject)=>{
         let options = {
             page:currentPage,//从前台拿到当前页 //query是一个对象
             model:this, //操作的数据模型
             query:query, //查询条件,查询所有
             projection:'name _id price order status',//投影
-            sort:{_id:1}, //排序
-            // populate:[{path:'sonId',select:'_id pid'}]//关联查询
+            sort:{order:-1},//降序
         }
         pagination(options)
         .then((data)=>{
