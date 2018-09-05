@@ -114,6 +114,7 @@ router.post('/login',(req,res)=>{
 
 //退出处理
 router.get('/logout',(req,res)=>{
+	// console.log('ssssss')
 	let result={
 		code:0,//0代表成功
 		errmessage:''

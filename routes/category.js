@@ -66,19 +66,10 @@ router.post('/',(req,res)=>{
 //获取分类添加到根分类下
 router.get('/',(req,res)=>{
 	let pid=req.query.pid;
+	// console.log('pid...',pid)
 	let currentPage=req.query.currentPage;
 	if(currentPage){
 		CategoryModel.getPaginationCategories(currentPage,{pid:pid})
-		/*
-		let options = {
-			page:req.query.currentPage,//从前台拿到当前页 //query是一个对象
-			model:CategoryModel, //操作的数据模型
-			query:{pid:pid}, //查询条件,查询所有
-			projection:'_id name order pid',//投影
-			sort:{_id:1} //排序
-		}
-		pagination(options)
-		*/
 		.then((result)=>{
 			// console.log('result....',result)
 			res.json({
