@@ -3,6 +3,151 @@ const router=Router();
 const UserModel=require('../models/user.js');
 const hmac=require('../util/hmac.js');
 
+
+
+
+//退出处理
+router.get('/logout',(req,res)=>{
+	// console.log('ssssss')
+	let result={
+		code:0,//0代表成功
+		errmessage:''
+	}
+	// req.cookies.set('userInfo',null);
+	req.session.destroy();
+	res.json(result);
+})
+
+//注册用户
+router.post('/register',(req,res)=>{
+	// console.log(req.body);
+	let body=req.body;
+	//定义返回数据
+	let	result={
+		code:0,//0代表成功
+		errmessage:'',	
+	}
+	UserModel
+	.findOne({username:body.username})//返回一个promise对象
+	.then((user)=>{
+		if(user){//已经有该用户
+			result.code=1;
+			result.errmessage='该用户已存在,请重新注册用户';
+			res.json(result);
+		}else{//没有注册过就插入存到数据库
+			new UserModel({
+				username:body.username,
+				phone:body.phone,
+				email:body.email,
+				password:hmac(body.password),
+				isAdmin:false
+			})
+			.save((err,newUser)=>{
+				if(!err){//插入数据库成功
+					res.json(result);
+				}else{//插入数据库失败
+					result.code=1;
+					result.errmessage='注册失败';
+					res.json(result);
+				}
+			})
+		}
+	})
+})
+
+
+//登录用户
+router.post('/login',(req,res)=>{
+	// console.log(req.body);
+	let body=req.body;
+	//定义返回数据
+	let result={
+		code:0,//0代表成功
+		errmessage:''
+	}
+	UserModel  //数据库里查找用户名和密码
+	.findOne({username:body.username,password:hmac(body.password),isAdmin:false})//返回一个promise对象
+	.then((user)=>{//user就是查出来的用户名和密码这个对象
+		if(user){
+			req.session.userInfo={//在前台layout使用
+				_id:user._id,
+				username:user.username,
+				isAdmin:user.isAdmin
+			}
+			res.json(result);  //code  errmessage 
+			// console.log(result)
+		}else{
+			result.code=1,
+			result.errmessage='用户名或密码错误',
+			res.json(result);
+		}
+	})
+})
+
+
+//判断用户名是否已注册
+router.get('/checkUsername',(req,res)=>{
+	let username=req.query.username;
+	UserModel  //数据库里查找用户名
+	.findOne({username:username})//返回一个promise对象
+	.then((username)=>{//该用户名已被注册
+		if(username){
+			res.json({
+				code:1,
+				errmessage:'该用户名已被注册,请重新输入用户名'
+			})
+		}else{
+			res.json({
+				code:0,
+			})
+		}
+	})
+})
+
+/*
+//权限控制
+router.use((req,res,next)=>{
+	if(req.userInfo._id){	
+		next();
+	}else{
+		res.send({
+			code:10
+		})
+	}
+})
+*/
+//获取用户信息展示在前台页面
+router.get('/userInfo',(req,res)=>{
+	if(req.userInfo._id){
+		res.json({
+			code:0,
+			data:req.userInfo
+		})
+	}else{
+		res.json({
+			code:1,//不做任何处理
+		})
+	}
+	
+})
+
+
+// so far so good
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /*
 //插入用户信息(在地址栏里面直接输入使用get请求)
 //服务器是3001端口,在地址栏输入3001找数据
@@ -71,56 +216,7 @@ router.post('/register',(req,res)=>{
 })
 
 
-//登录用户
-router.post('/login',(req,res)=>{
-	// console.log(req.body);
-	let body=req.body;
-	//定义返回数据
-	let result={
-		code:0,//0代表成功
-		errmessage:''
-	}
-	UserModel  //数据库里查找用户名和密码
-	.findOne({username:body.username,password:hmac(body.password)})//返回一个promise对象
-	.then((user)=>{//user就是查出来的用户名和密码这个对象
-		if(user){
-			/*
-			result.data={//获取到数据库里的数据
-				_id:user._id,
-				username:user.username,
-				isAdmin:user.isAdmin
-			}
-			//设置cookies
-			req.cookies.set('userInfo',JSON.stringify(result.data));
-			res.json(result)
-			//把带cookies的数据(键就是userinfo,id就是值)和result里面的数据返回到前端页面
-			*/
-		
-			req.session.userInfo={//在前台layout使用
-				_id:user._id,
-				username:user.username,
-				isAdmin:user.isAdmin
-			}
-			res.json(result);  //result.code  result.errmessage  result.data
-			// console.log(result)
-		}else{
-			result.code=10,
-			result.errmessage='用户名或密码错误',
-			res.json(result);
-		}
-	})
-})
 
 
-//退出处理
-router.get('/logout',(req,res)=>{
-	// console.log('ssssss')
-	let result={
-		code:0,//0代表成功
-		errmessage:''
-	}
-	// req.cookies.set('userInfo',null);
-	req.session.destroy();
-	res.json(result);
-})
+
 module.exports=router;
