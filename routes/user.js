@@ -104,19 +104,8 @@ router.get('/checkUsername',(req,res)=>{
 	})
 })
 
-/*
-//权限控制
-router.use((req,res,next)=>{
-	if(req.userInfo._id){	
-		next();
-	}else{
-		res.send({
-			code:10
-		})
-	}
-})
-*/
-//获取用户信息展示在前台页面
+
+//获取用户信息展示在nav前台页面
 router.get('/userInfo',(req,res)=>{
 	if(req.userInfo._id){
 		res.json({
@@ -127,9 +116,60 @@ router.get('/userInfo',(req,res)=>{
 		res.json({
 			code:1,//不做任何处理
 		})
-	}
-	
+	}	
 })
+
+//权限控制
+router.use((req,res,next)=>{
+	if(req.userInfo._id){	
+		next();
+	}else{
+		res.send({
+			code:10
+		})
+	}
+})
+
+
+
+//获取用户中心的信息展示在用户中心页面中
+router.get('/userCenterInfo',(req,res)=>{
+	// console.log(req.userInfo)
+	if(req.userInfo._id){
+		UserModel.findById(req.userInfo._id,'username phone email')
+		.then(user=>{
+			// console.log(user)
+			res.json({
+				code:0,
+				data:user
+			})
+		})		
+	}else{
+		res.json({
+			code:1,//不做任何处理
+		})
+	}	
+})
+
+router.put('/updatePassword',(req,res)=>{
+	// console.log(req.body.password)//是更新后的密码
+	UserModel.update({_id:req.userInfo._id},{password:hmac(req.body.password)})
+	.then(raw=>{
+		res.json({
+			code:0,
+			dada:{
+				message:'修改密码成功'
+			}
+		})
+	})
+	.catch(e=>{
+		res.json({
+			code:1,
+			errmessage:'修改密码失败'
+		})
+	})
+})
+
 
 
 // so far so good
