@@ -1,6 +1,7 @@
 const Router=require('express').Router;
 const router=Router();
 const UserModel=require('../models/user.js');
+const ProductModel=require('../models/product.js');
 const hmac=require('../util/hmac.js');
 
 
@@ -119,7 +120,56 @@ router.get('/userInfo',(req,res)=>{
 	}	
 })
 
-//权限控制
+//获取列表商品信息
+router.get('/productList',(req,res)=>{
+	// console.log(req.query)//{page:'1',keyword:'秋装'/categoryId:'1111',orderBy:'default'}
+	//获取分页信息
+	let page=req.query.page;
+
+	//状态是0表示在售
+	let query={status:0};
+	//如果有categoryId就按categoryId展示
+	if(req.query.categoeyId){
+		query.category=categoeyId;
+	}else{//如果有关键字就按关键字展示
+		query.name={$regex:new RegExp(req.keyword,'i')}
+	}
+
+	let projection='_id name price Image';
+
+	let sort={order:-1};
+	//如果是默认排序的话,就默认排序是order:-1
+	if(req.query.orderBy=='price-sort-up'){
+		//按价格升序
+		sort={price:-1}
+	}else if(req.query.orderBy=='price-sort-down'){
+		//按价格降序
+		sort={price:1}
+	}
+
+	ProductModel.getPaginationProducts(page,query,projection,sort)
+	.then(result=>{
+		res.json({
+			code:0,
+			data:{
+				current:result.current,
+				pageSize:result.pageSize,
+				total:result.total,
+				list:result.list
+			}
+		})
+	})
+	.catch(e=>{
+		res.json({
+			code:1,
+			errmessage:'获取商品分类列表错误'
+		})
+	})
+})
+
+
+
+//权限控制(只有登录有用户信息(登录过了)才可以做下面的操作)
 router.use((req,res,next)=>{
 	if(req.userInfo._id){	
 		next();

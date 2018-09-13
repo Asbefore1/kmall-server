@@ -136,7 +136,7 @@ router.put('/changeName',(req,res)=>{
 						})
 					})
 				}else{
-					console.log('err..',err)
+					// console.log('err..',err)
 					res.json({
 						code:1,
 						errmessage:'更新失败'
@@ -144,7 +144,7 @@ router.put('/changeName',(req,res)=>{
 				}
 			})			
 			.catch((e)=>{//插入失败,渲染错误页面
-				console.log('e..',e)
+				// console.log('e..',e)
 				res.json({
 					code:1,
 					errmessage:'插入失败,服务器端错误'

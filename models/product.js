@@ -37,14 +37,14 @@ const ProductSchema = new mongoose.Schema({
     });
 
 //静态方法
-ProductSchema.statics.getPaginationProducts = function(currentPage,query={}){
+ProductSchema.statics.getPaginationProducts = function(currentPage,query={},projection='name _id price order status',sort={order:-1}){
     return new Promise((resolve,reject)=>{
         let options = {
             page:currentPage,//从前台拿到当前页 //query是一个对象
             model:this, //操作的数据模型
             query:query, //查询条件,查询所有
-            projection:'name _id price order status',//投影
-            sort:{order:-1},//降序
+            projection:projection,//投影
+            sort:sort,//降序
         }
         pagination(options)
         .then((data)=>{
