@@ -129,22 +129,23 @@ router.get('/productList',(req,res)=>{
 	//状态是0表示在售
 	let query={status:0};
 	//如果有categoryId就按categoryId展示
-	if(req.query.categoeyId){
-		query.category=categoeyId;
+	if(req.query.categoryId){
+		query.category=req.query.categoryId;
 	}else{//如果有关键字就按关键字展示
-		query.name={$regex:new RegExp(req.keyword,'i')}
+		query.name={$regex:new RegExp(req.query.keyword,'i')}
 	}
 
-	let projection='_id name price Image';
+	let projection='_id name price Image ';
 
+	//如果是默认排序的话,就默认排序是order:-1,不是按价格
 	let sort={order:-1};
-	//如果是默认排序的话,就默认排序是order:-1
+	
 	if(req.query.orderBy=='price-sort-up'){
 		//按价格升序
-		sort={price:-1}
+		sort={price:1}
 	}else if(req.query.orderBy=='price-sort-down'){
 		//按价格降序
-		sort={price:1}
+		sort={price:-1}
 	}
 
 	ProductModel.getPaginationProducts(page,query,projection,sort)
@@ -155,7 +156,8 @@ router.get('/productList',(req,res)=>{
 				current:result.current,
 				pageSize:result.pageSize,
 				total:result.total,
-				list:result.list
+				list:result.list,
+				sort:result.sort
 			}
 		})
 	})
