@@ -169,7 +169,23 @@ router.get('/productList',(req,res)=>{
 	})
 })
 
-
+//获取商品详情页
+router.get('/productDetail',(req,res)=>{
+	ProductModel
+	.findOne({status:0,_id:req.query.productId},'-__v -createdAt -updatedAt')
+	.then(product=>{
+		res.json({
+			code:0,
+			data:product
+		})
+	})
+	.catch(e=>{
+		res.json({
+			code:1,
+			errmessage:'获取商品详情页错误'
+		})
+	})
+})
 
 //权限控制(只有登录有用户信息(登录过了)才可以做下面的操作)
 router.use((req,res,next)=>{
