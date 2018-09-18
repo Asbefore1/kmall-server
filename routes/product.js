@@ -17,6 +17,73 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 
+//获取列表商品信息
+router.get('/productList',(req,res)=>{
+	// console.log(req.query)//{page:'1',keyword:'秋装'/categoryId:'1111',orderBy:'default'}
+	//获取分页信息
+	let page=req.query.page;
+
+	//状态是0表示在售
+	let query={status:0};
+	//如果有categoryId就按categoryId展示
+	if(req.query.categoryId){
+		query.category=req.query.categoryId;
+	}else{//如果有关键字就按关键字展示
+		query.name={$regex:new RegExp(req.query.keyword,'i')}
+	}
+
+	let projection='_id name price Image ';
+
+	//如果是默认排序的话,就默认排序是order:-1,不是按价格
+	let sort={order:-1};
+	
+	if(req.query.orderBy=='price-sort-up'){
+		//按价格升序
+		sort={price:1}
+	}else if(req.query.orderBy=='price-sort-down'){
+		//按价格降序
+		sort={price:-1}
+	}
+
+	ProductModel.getPaginationProducts(page,query,projection,sort)
+	.then(result=>{
+		res.json({
+			code:0,
+			data:{
+				current:result.current,
+				pageSize:result.pageSize,
+				total:result.total,
+				list:result.list,
+				sort:result.sort
+			}
+		})
+	})
+	.catch(e=>{
+		res.json({
+			code:1,
+			errmessage:'获取商品分类列表错误'
+		})
+	})
+})
+
+//获取商品详情页
+router.get('/productDetail',(req,res)=>{
+	ProductModel
+	.findOne({status:0,_id:req.query.productId},'-__v -createdAt -updatedAt')
+	.then(product=>{
+		res.json({
+			code:0,
+			data:product
+		})
+	})
+	.catch(e=>{
+		res.json({
+			code:1,
+			errmessage:'获取商品详情页错误'
+		})
+	})
+})
+
 //权限控制
 router.use((req,res,next)=>{
 	// console.log(req.userInfo)
